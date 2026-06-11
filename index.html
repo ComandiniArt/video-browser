@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glass Video Broker</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --accent-color: #0084ff;
+            --text-color: #ffffff;
+            --card-bg: #16161a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .upload-zone {
+            border: 2px dashed #333;
+            padding: 40px 20px;
+            border-radius: 12px;
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-color);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .player-wrapper {
+            display: none;
+            width: 100%;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            max-height: 70vh;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            background: rgba(20, 20, 20, 0.95);
+            padding: 15px;
+            gap: 15px;
+            align-items: center;
+        }
+
+        button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #333;
+        }
+
+        .file-info {
+            font-size: 14px;
+            color: #aaa;
+            text-align: left;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- File Picker Screen -->
+        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+            <div class="upload-icon">📁</div>
+            <h3>Browse Phone Storage</h3>
+            <p>Select any downloaded video to stream to your device</p>
+            <input type="type" id="file-input" type="file" accept="video/*">
+        </div>
+
+        <!-- Video Player Screen -->
+        <div class="player-wrapper" id="player-container">
+            <video id="video-player" controls autoplay playsinline></video>
+            <div class="controls">
+                <div class="file-info" id="file-name">No file selected</div>
+                <button class="btn-secondary" onclick="resetPlayer()">Change Video</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const videoPlayer = document.getElementById('video-player');
+        const dropZone = document.getElementById('drop-zone');
+        const playerContainer = document.getElementById('player-container');
+        const fileNameDisplay = document.getElementById('file-name');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleVideoFile(file);
+            }
+        });
+
+        function handleVideoFile(file) {
+            // Create a secure local object URL pointing to the device's RAM cache
+            const fileURL = URL.createObjectURL(file);
+            
+            videoPlayer.src = fileURL;
+            fileNameDisplay.textContent = file.name;
+            
+            // Toggle UI views
+            dropZone.style.display = 'none';
+            playerContainer.style.display = 'block';
+            
+            // Request full screen if supported to optimize layout for glasses view
+            if (playerContainer.requestFullscreen) {
+                playerContainer.requestFullscreen();
+            }
+        }
+
+        function resetPlayer() {
+            // Clean up memory leaks by revoking old URL object
+            if (videoPlayer.src) {
+                URL.revokeObjectURL(videoPlayer.src);
+            }
+            videoPlayer.src = '';
+            fileInput.value = '';
+            
+            // Toggle UI back
+            dropZone.style.display = 'block';
+            playerContainer.style.display = 'none';
+            
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        }
+
+        // Optional drag and drop support for desktop testing
+        dropZone.addEventListener('dragover', (e) => e.preventDefault());
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('video/')) {
+                handleVideoFile(file);
+            }
+        });
+    </script>
+</body>
+</html>
