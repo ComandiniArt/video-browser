@@ -1,194 +1,415 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glass Video Broker</title>
-    <style>
-        :root {
-            --bg-color: #0a0a0a;
-            --accent-color: #0084ff;
-            --text-color: #ffffff;
-            --card-bg: #16161a;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Ray-Ban Video Player</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #000;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
+  /* ── SCREEN: FILE BROWSER ── */
+  #screen-browse {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #000;
+  }
+  .top-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px 12px;
+    border-bottom: 0.5px solid #222;
+  }
+  .top-bar svg { flex-shrink: 0; }
+  .top-bar h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .top-bar p  { font-size: 12px; color: #666; margin-top: 1px; }
 
-        .container {
-            width: 100%;
-            max-width: 800px;
-            padding: 20px;
-            box-sizing: border-box;
-            text-align: center;
-        }
+  .pick-btn {
+    margin: 20px 16px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #1a1a2e;
+    border: 1.5px solid #3a3aff;
+    border-radius: 14px;
+    padding: 18px;
+    cursor: pointer;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    width: calc(100% - 32px);
+    transition: background 0.15s;
+  }
+  .pick-btn:active { background: #22226a; }
+  .pick-btn svg { flex-shrink: 0; }
 
-        .upload-zone {
-            border: 2px dashed #333;
-            padding: 40px 20px;
-            border-radius: 12px;
-            background: var(--card-bg);
-            cursor: pointer;
-            transition: border-color 0.3s ease;
-            margin-bottom: 20px;
-        }
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 8px 20px 6px;
+  }
 
-        .upload-zone:hover {
-            border-color: var(--accent-color);
-        }
+  .file-list { padding: 0 0 80px; }
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 0.5px solid #111;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .file-item:active { background: #111; }
+  .file-thumb {
+    width: 52px;
+    height: 36px;
+    border-radius: 6px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .file-thumb video, .file-thumb canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .file-thumb svg { opacity: 0.4; }
+  .file-meta { flex: 1; min-width: 0; }
+  .file-name {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #fff;
+  }
+  .file-sub {
+    font-size: 12px;
+    color: #555;
+    margin-top: 2px;
+  }
+  .file-play-icon { color: #3a3aff; flex-shrink: 0; }
 
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 30px;
+    color: #444;
+    text-align: center;
+    gap: 12px;
+  }
+  .empty-state p { font-size: 14px; line-height: 1.5; }
 
-        #file-input {
-            display: none;
-        }
+  /* ── SCREEN: PLAYER ── */
+  #screen-player {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #000;
+  }
+  .player-topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    position: relative;
+    z-index: 10;
+  }
+  .back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .back-btn:active { background: #2a2a2a; }
+  .player-title {
+    font-size: 14px;
+    font-weight: 500;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-        .player-wrapper {
-            display: none;
-            width: 100%;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+  .video-wrap {
+    width: 100%;
+    background: #000;
+    position: relative;
+  }
+  #vid {
+    width: 100%;
+    height: auto;
+    max-height: 55vw;
+    display: block;
+    background: #000;
+  }
 
-        video {
-            width: 100%;
-            height: auto;
-            max-height: 70vh;
-            display: block;
-        }
+  .cast-banner {
+    margin: 12px 16px;
+    background: #0d1a0d;
+    border: 1px solid #1a4d1a;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #5faa5f;
+    line-height: 1.5;
+  }
+  .cast-banner strong { color: #7bca7b; display: block; margin-bottom: 3px; }
 
-        .controls {
-            display: flex;
-            background: rgba(20, 20, 20, 0.95);
-            padding: 15px;
-            gap: 15px;
-            align-items: center;
-        }
+  .info-row {
+    padding: 10px 20px;
+    border-top: 0.5px solid #111;
+  }
+  .info-row .lbl { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.6px; }
+  .info-row .val { font-size: 13px; color: #bbb; margin-top: 2px; }
 
-        button {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
+  #file-input { display: none; }
 
-        button:hover {
-            opacity: 0.9;
-        }
+  .hint-box {
+    margin: 12px 16px 0;
+    background: #0a0a1a;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.6;
+  }
+  .hint-box b { color: #aaa; }
 
-        .btn-secondary {
-            background: #333;
-        }
-
-        .file-info {
-            font-size: 14px;
-            color: #aaa;
-            text-align: left;
-            flex-grow: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    </style>
+  .step-list { counter-reset: steps; margin-top: 6px; }
+  .step-list li {
+    counter-increment: steps;
+    list-style: none;
+    padding: 3px 0 3px 22px;
+    position: relative;
+    font-size: 12px;
+    color: #666;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    background: #1a1a3a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: #5a5aff;
+    text-align: center;
+    line-height: 16px;
+  }
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- File Picker Screen -->
-        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-            <div class="upload-icon">📁</div>
-            <h3>Browse Phone Storage</h3>
-            <p>Select any downloaded video to stream to your device</p>
-            <input type="type" id="file-input" type="file" accept="video/*">
-        </div>
+<input type="file" id="file-input" accept="video/*" multiple>
 
-        <!-- Video Player Screen -->
-        <div class="player-wrapper" id="player-container">
-            <video id="video-player" controls autoplay playsinline></video>
-            <div class="controls">
-                <div class="file-info" id="file-name">No file selected</div>
-                <button class="btn-secondary" onclick="resetPlayer()">Change Video</button>
-            </div>
-        </div>
+<!-- BROWSE SCREEN -->
+<div id="screen-browse">
+  <div class="top-bar">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="8" fill="#1a1a2e"/>
+      <path d="M7 10.5h14M7 14h9M7 17.5h11" stroke="#5a5aff" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <h1>Ray-Ban Video</h1>
+      <p>Select a video to watch on your glasses</p>
     </div>
+  </div>
 
-    <script>
-        const fileInput = document.getElementById('file-input');
-        const videoPlayer = document.getElementById('video-player');
-        const dropZone = document.getElementById('drop-zone');
-        const playerContainer = document.getElementById('player-container');
-        const fileNameDisplay = document.getElementById('file-name');
+  <button class="pick-btn" onclick="document.getElementById('file-input').click()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a7aff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 6h18M3 12h12M3 18h9"/><path d="M16 18l2 2 4-4"/>
+    </svg>
+    Browse phone storage
+  </button>
 
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                handleVideoFile(file);
-            }
-        });
+  <div class="hint-box">
+    <b>How to watch on Ray-Ban glasses:</b>
+    <ol class="step-list">
+      <li>Pick a video below</li>
+      <li>Open <b>Meta View app</b> on your phone</li>
+      <li>Tap <b>Live</b> → share your phone screen</li>
+      <li>The video will appear through your glasses</li>
+    </ol>
+  </div>
 
-        function handleVideoFile(file) {
-            // Create a secure local object URL pointing to the device's RAM cache
-            const fileURL = URL.createObjectURL(file);
-            
-            videoPlayer.src = fileURL;
-            fileNameDisplay.textContent = file.name;
-            
-            // Toggle UI views
-            dropZone.style.display = 'none';
-            playerContainer.style.display = 'block';
-            
-            // Request full screen if supported to optimize layout for glasses view
-            if (playerContainer.requestFullscreen) {
-                playerContainer.requestFullscreen();
-            }
-        }
+  <div class="section-label" id="list-label" style="display:none; margin-top:14px;">Your videos</div>
+  <div class="file-list" id="file-list">
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="3"/>
+        <polygon points="10 8 16 12 10 16 10 8" fill="#333"/>
+      </svg>
+      <p>No videos selected yet.<br>Tap "Browse phone storage" to pick MP4, MOV, or any video file.</p>
+    </div>
+  </div>
+</div>
 
-        function resetPlayer() {
-            // Clean up memory leaks by revoking old URL object
-            if (videoPlayer.src) {
-                URL.revokeObjectURL(videoPlayer.src);
-            }
-            videoPlayer.src = '';
-            fileInput.value = '';
-            
-            // Toggle UI back
-            dropZone.style.display = 'block';
-            playerContainer.style.display = 'none';
-            
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            }
-        }
+<!-- PLAYER SCREEN -->
+<div id="screen-player">
+  <div class="player-topbar">
+    <button class="back-btn" onclick="goBack()" aria-label="Back to file list">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <div class="player-title" id="player-title">Video</div>
+  </div>
 
-        // Optional drag and drop support for desktop testing
-        dropZone.addEventListener('dragover', (e) => e.preventDefault());
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('video/')) {
-                handleVideoFile(file);
-            }
-        });
-    </script>
+  <div class="video-wrap">
+    <video id="vid" controls playsinline preload="auto"></video>
+  </div>
+
+  <div class="cast-banner">
+    <strong>📡 Stream to glasses</strong>
+    In Meta View app → Live → share this screen. Keep this app in the foreground.
+  </div>
+
+  <div class="info-row" id="info-name">
+    <div class="lbl">File</div>
+    <div class="val" id="info-filename">—</div>
+  </div>
+  <div class="info-row" id="info-size">
+    <div class="lbl">Size</div>
+    <div class="val" id="info-filesize">—</div>
+  </div>
+  <div class="info-row" id="info-type">
+    <div class="lbl">Format</div>
+    <div class="val" id="info-filetype">—</div>
+  </div>
+</div>
+
+<script>
+  const fileInput = document.getElementById('file-input');
+  const fileList  = document.getElementById('file-list');
+  const listLabel = document.getElementById('list-label');
+  const vid       = document.getElementById('vid');
+  const browseScreen = document.getElementById('screen-browse');
+  const playerScreen = document.getElementById('screen-player');
+
+  let loadedFiles = [];
+  let currentObjectURL = null;
+
+  fileInput.addEventListener('change', function(e) {
+    const files = Array.from(e.target.files).filter(f => f.type.startsWith('video/') || /\.(mp4|mov|avi|mkv|webm|m4v|3gp|ts|wmv)$/i.test(f.name));
+    if (!files.length) return;
+    loadedFiles = [...loadedFiles, ...files];
+    renderList();
+  });
+
+  function renderList() {
+    if (!loadedFiles.length) return;
+    listLabel.style.display = 'block';
+    fileList.innerHTML = '';
+    loadedFiles.forEach((file, i) => {
+      const item = document.createElement('div');
+      item.className = 'file-item';
+      item.innerHTML = `
+        <div class="file-thumb" id="thumb-${i}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="3"/><polygon points="10 8 16 12 10 16 10 8" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="file-meta">
+          <div class="file-name">${escHtml(file.name)}</div>
+          <div class="file-sub">${fmtSize(file.size)} · ${file.type || ext(file.name)}</div>
+        </div>
+        <svg class="file-play-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
+        </svg>
+      `;
+      item.onclick = () => playFile(file);
+      fileList.appendChild(item);
+      generateThumb(file, i);
+    });
+  }
+
+  function generateThumb(file, i) {
+    const thumbEl = document.getElementById('thumb-' + i);
+    if (!thumbEl) return;
+    const url = URL.createObjectURL(file);
+    const tmpVid = document.createElement('video');
+    tmpVid.src = url;
+    tmpVid.muted = true;
+    tmpVid.playsInline = true;
+    tmpVid.currentTime = 2;
+    tmpVid.addEventListener('seeked', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 104; canvas.height = 72;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(tmpVid, 0, 0, 104, 72);
+      thumbEl.innerHTML = '';
+      thumbEl.appendChild(canvas);
+      URL.revokeObjectURL(url);
+    }, { once: true });
+    tmpVid.addEventListener('error', () => URL.revokeObjectURL(url), { once: true });
+  }
+
+  function playFile(file) {
+    if (currentObjectURL) URL.revokeObjectURL(currentObjectURL);
+    currentObjectURL = URL.createObjectURL(file);
+    vid.src = currentObjectURL;
+    document.getElementById('player-title').textContent = file.name;
+    document.getElementById('info-filename').textContent = file.name;
+    document.getElementById('info-filesize').textContent = fmtSize(file.size);
+    document.getElementById('info-filetype').textContent = file.type || ext(file.name);
+    browseScreen.style.display = 'none';
+    playerScreen.style.display = 'flex';
+    vid.play().catch(() => {});
+    if (playerScreen.requestFullscreen && /Mobi|Android/i.test(navigator.userAgent)) {
+      playerScreen.requestFullscreen().catch(() => {});
+    }
+  }
+
+  function goBack() {
+    vid.pause();
+    if (document.fullscreenElement) document.exitFullscreen();
+    playerScreen.style.display = 'none';
+    browseScreen.style.display = 'flex';
+  }
+
+  function fmtSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+  }
+
+  function ext(name) { return name.split('.').pop().toUpperCase(); }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
 </body>
 </html>
