@@ -2,414 +2,421 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Ray-Ban Video Player</title>
+<meta name="mrbd-web-app-capable" content="yes">
+<meta name="description" content="Video player for Meta Ray-Ban Display glasses">
+<meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+<title>Video Player</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #000;
-    color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  width:600px;height:600px;overflow:hidden;
+  background:#000;color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  display:flex;flex-direction:column;
+}
 
-  /* ── SCREEN: FILE BROWSER ── */
-  #screen-browse {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background: #000;
-  }
-  .top-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 16px 20px 12px;
-    border-bottom: 0.5px solid #222;
-  }
-  .top-bar svg { flex-shrink: 0; }
-  .top-bar h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
-  .top-bar p  { font-size: 12px; color: #666; margin-top: 1px; }
+/* ── SCREEN: MENU ── */
+#screen-menu{display:flex;flex-direction:column;width:600px;height:600px;padding:28px 32px}
+.logo{font-size:13px;font-weight:600;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.menu-title{font-size:28px;font-weight:700;color:#fff;margin-bottom:6px}
+.menu-sub{font-size:14px;color:#444;margin-bottom:32px}
 
-  .pick-btn {
-    margin: 20px 16px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: #1a1a2e;
-    border: 1.5px solid #3a3aff;
-    border-radius: 14px;
-    padding: 18px;
-    cursor: pointer;
-    color: #fff;
-    font-size: 16px;
-    font-weight: 600;
-    width: calc(100% - 32px);
-    transition: background 0.15s;
-  }
-  .pick-btn:active { background: #22226a; }
-  .pick-btn svg { flex-shrink: 0; }
+.menu-list{display:flex;flex-direction:column;gap:10px;flex:1}
+.menu-item{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 20px;border-radius:12px;
+  background:#0a0a0a;border:2px solid transparent;
+  cursor:pointer;transition:border-color 0.15s,background 0.15s;
+  min-height:72px;
+}
+.menu-item:focus{
+  outline:none;border-color:#00d4ff;
+  background:#001a20;
+  box-shadow:0 0 24px rgba(0,212,255,0.25);
+}
+.menu-icon{font-size:28px;width:36px;text-align:center;flex-shrink:0}
+.menu-text{flex:1}
+.menu-label{font-size:17px;font-weight:600;color:#fff}
+.menu-desc{font-size:12px;color:#555;margin-top:2px}
+.menu-arrow{color:#333;font-size:18px}
+.menu-item:focus .menu-arrow{color:#00d4ff}
 
-  .section-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    padding: 8px 20px 6px;
-  }
+.nav-hint{font-size:11px;color:#333;text-align:center;padding-top:16px;letter-spacing:0.5px}
 
-  .file-list { padding: 0 0 80px; }
-  .file-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    border-bottom: 0.5px solid #111;
-    cursor: pointer;
-    transition: background 0.12s;
-  }
-  .file-item:active { background: #111; }
-  .file-thumb {
-    width: 52px;
-    height: 36px;
-    border-radius: 6px;
-    background: #1a1a1a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-  .file-thumb video, .file-thumb canvas {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .file-thumb svg { opacity: 0.4; }
-  .file-meta { flex: 1; min-width: 0; }
-  .file-name {
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: #fff;
-  }
-  .file-sub {
-    font-size: 12px;
-    color: #555;
-    margin-top: 2px;
-  }
-  .file-play-icon { color: #3a3aff; flex-shrink: 0; }
+/* ── SCREEN: VIDEO LIST ── */
+#screen-list{display:none;flex-direction:column;width:600px;height:600px}
+.list-header{display:flex;align-items:center;gap:12px;padding:20px 24px 14px;border-bottom:1px solid #111}
+.back-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:50%;
+  background:#111;border:2px solid transparent;color:#fff;
+  font-size:18px;cursor:pointer;flex-shrink:0;
+}
+.back-btn:focus{outline:none;border-color:#00d4ff;box-shadow:0 0 16px rgba(0,212,255,0.3)}
+.list-title{font-size:18px;font-weight:700}
 
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 30px;
-    color: #444;
-    text-align: center;
-    gap: 12px;
-  }
-  .empty-state p { font-size: 14px; line-height: 1.5; }
+.video-list{flex:1;overflow:hidden;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.video-item{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border-radius:10px;
+  background:#080808;border:2px solid transparent;
+  cursor:pointer;min-height:72px;
+}
+.video-item:focus{outline:none;border-color:#00d4ff;background:#001a20;box-shadow:0 0 20px rgba(0,212,255,0.2)}
+.vi-thumb{
+  width:72px;height:44px;border-radius:6px;
+  background:#111;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;overflow:hidden;font-size:22px;
+}
+.vi-info{flex:1;min-width:0}
+.vi-name{font-size:15px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vi-meta{font-size:12px;color:#555;margin-top:3px}
+.vi-play{color:#333;font-size:16px}
+.video-item:focus .vi-play{color:#00d4ff}
 
-  /* ── SCREEN: PLAYER ── */
-  #screen-player {
-    display: none;
-    flex-direction: column;
-    min-height: 100vh;
-    background: #000;
-  }
-  .player-topbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    position: relative;
-    z-index: 10;
-  }
-  .back-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #1a1a1a;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .back-btn:active { background: #2a2a2a; }
-  .player-title {
-    font-size: 14px;
-    font-weight: 500;
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.add-url-row{
+  padding:10px 16px 16px;
+}
+.add-url-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px;border-radius:10px;
+  background:#050510;border:2px solid #1a1a3a;
+  color:#4a4aaa;font-size:14px;font-weight:600;cursor:pointer;
+  min-height:52px;
+}
+.add-url-btn:focus{outline:none;border-color:#00d4ff;color:#00d4ff;box-shadow:0 0 16px rgba(0,212,255,0.2)}
 
-  .video-wrap {
-    width: 100%;
-    background: #000;
-    position: relative;
-  }
-  #vid {
-    width: 100%;
-    height: auto;
-    max-height: 55vw;
-    display: block;
-    background: #000;
-  }
+/* ── SCREEN: URL INPUT ── */
+#screen-url{display:none;flex-direction:column;width:600px;height:600px;padding:32px}
+.url-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.url-sub{font-size:13px;color:#555;margin-bottom:28px;line-height:1.6}
 
-  .cast-banner {
-    margin: 12px 16px;
-    background: #0d1a0d;
-    border: 1px solid #1a4d1a;
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 13px;
-    color: #5faa5f;
-    line-height: 1.5;
-  }
-  .cast-banner strong { color: #7bca7b; display: block; margin-bottom: 3px; }
+.preset-label{font-size:11px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.preset-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.preset-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:10px;
+  background:#0a0a0a;border:2px solid transparent;
+  cursor:pointer;min-height:60px;
+}
+.preset-item:focus{outline:none;border-color:#00d4ff;background:#001a20;box-shadow:0 0 16px rgba(0,212,255,0.2)}
+.preset-dot{width:10px;height:10px;border-radius:50%;background:#333;flex-shrink:0}
+.preset-item:focus .preset-dot{background:#00d4ff}
+.preset-name{font-size:14px;font-weight:600;color:#ccc}
+.preset-url{font-size:11px;color:#555;margin-top:2px;font-family:monospace}
 
-  .info-row {
-    padding: 10px 20px;
-    border-top: 0.5px solid #111;
-  }
-  .info-row .lbl { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.6px; }
-  .info-row .val { font-size: 13px; color: #bbb; margin-top: 2px; }
+.url-instruction{font-size:12px;color:#333;line-height:1.7;border-top:1px solid #111;padding-top:16px}
+.url-instruction a{color:#00d4ff}
 
-  #file-input { display: none; }
+/* ── SCREEN: PLAYER ── */
+#screen-player{display:none;flex-direction:column;width:600px;height:600px;background:#000}
+#vid{width:600px;height:450px;display:block;background:#000;object-fit:contain}
 
-  .hint-box {
-    margin: 12px 16px 0;
-    background: #0a0a1a;
-    border-radius: 10px;
-    padding: 14px;
-    font-size: 12px;
-    color: #666;
-    line-height: 1.6;
-  }
-  .hint-box b { color: #aaa; }
+.player-bar{
+  flex:1;display:flex;flex-direction:column;
+  padding:10px 16px 12px;
+  border-top:1px solid #111;
+}
+.player-title{font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px}
 
-  .step-list { counter-reset: steps; margin-top: 6px; }
-  .step-list li {
-    counter-increment: steps;
-    list-style: none;
-    padding: 3px 0 3px 22px;
-    position: relative;
-    font-size: 12px;
-    color: #666;
-  }
-  .step-list li::before {
-    content: counter(steps);
-    position: absolute;
-    left: 0;
-    width: 16px;
-    height: 16px;
-    background: #1a1a3a;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 600;
-    color: #5a5aff;
-    text-align: center;
-    line-height: 16px;
-  }
+.progress-wrap{position:relative;height:4px;background:#1a1a1a;border-radius:2px;margin-bottom:10px}
+#progress-bar{height:4px;background:#00d4ff;border-radius:2px;width:0%;transition:width 0.5s linear}
+
+.controls-row{display:flex;align-items:center;justify-content:center;gap:8px}
+.ctrl-btn{
+  display:flex;align-items:center;justify-content:center;
+  padding:10px 16px;border-radius:8px;
+  background:#111;border:2px solid transparent;
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;
+  min-height:52px;min-width:80px;
+}
+.ctrl-btn:focus{outline:none;border-color:#00d4ff;background:#001a20;box-shadow:0 0 16px rgba(0,212,255,0.25)}
+.ctrl-btn.primary{background:#003344;color:#00d4ff}
+.ctrl-btn.primary:focus{background:#004455;border-color:#00d4ff}
+
+.time-row{display:flex;justify-content:space-between;margin-top:6px}
+.time-val{font-size:11px;color:#444;font-family:monospace}
 </style>
 </head>
 <body>
 
-<input type="file" id="file-input" accept="video/*" multiple>
+<!-- MENU SCREEN -->
+<div id="screen-menu">
+  <div class="logo">▶ Ray-Ban Video</div>
+  <div class="menu-title">What do you want to watch?</div>
+  <div class="menu-sub">Navigate with Neural Band · Pinch to select</div>
 
-<!-- BROWSE SCREEN -->
-<div id="screen-browse">
-  <div class="top-bar">
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-      <rect width="28" height="28" rx="8" fill="#1a1a2e"/>
-      <path d="M7 10.5h14M7 14h9M7 17.5h11" stroke="#5a5aff" stroke-width="1.8" stroke-linecap="round"/>
-    </svg>
-    <div>
-      <h1>Ray-Ban Video</h1>
-      <p>Select a video to watch on your glasses</p>
+  <div class="menu-list">
+    <div class="menu-item focusable" tabindex="0" data-action="browse" id="btn-browse">
+      <div class="menu-icon">📂</div>
+      <div class="menu-text">
+        <div class="menu-label">Browse videos</div>
+        <div class="menu-desc">Pick from your saved video URLs</div>
+      </div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item focusable" tabindex="0" data-action="demo">
+      <div class="menu-icon">🎬</div>
+      <div class="menu-text">
+        <div class="menu-label">Demo video</div>
+        <div class="menu-desc">Play a test stream instantly</div>
+      </div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item focusable" tabindex="0" data-action="sources">
+      <div class="menu-icon">🔗</div>
+      <div class="menu-text">
+        <div class="menu-label">Add a video URL</div>
+        <div class="menu-desc">Stream from a link or local server</div>
+      </div>
+      <div class="menu-arrow">›</div>
     </div>
   </div>
+  <div class="nav-hint">↑ ↓ Neural Band · Pinch = Select</div>
+</div>
 
-  <button class="pick-btn" onclick="document.getElementById('file-input').click()">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7a7aff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 6h18M3 12h12M3 18h9"/><path d="M16 18l2 2 4-4"/>
-    </svg>
-    Browse phone storage
-  </button>
-
-  <div class="hint-box">
-    <b>How to watch on Ray-Ban glasses:</b>
-    <ol class="step-list">
-      <li>Pick a video below</li>
-      <li>Open <b>Meta View app</b> on your phone</li>
-      <li>Tap <b>Live</b> → share your phone screen</li>
-      <li>The video will appear through your glasses</li>
-    </ol>
+<!-- VIDEO LIST SCREEN -->
+<div id="screen-list">
+  <div class="list-header">
+    <div class="back-btn focusable" tabindex="0" data-action="back-to-menu">‹</div>
+    <div class="list-title">Your Videos</div>
   </div>
-
-  <div class="section-label" id="list-label" style="display:none; margin-top:14px;">Your videos</div>
-  <div class="file-list" id="file-list">
-    <div class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="2" y="2" width="20" height="20" rx="3"/>
-        <polygon points="10 8 16 12 10 16 10 8" fill="#333"/>
-      </svg>
-      <p>No videos selected yet.<br>Tap "Browse phone storage" to pick MP4, MOV, or any video file.</p>
+  <div class="video-list" id="video-list"></div>
+  <div class="add-url-row">
+    <div class="add-url-btn focusable" tabindex="0" data-action="sources">
+      <span>＋</span> Add video URL
     </div>
+  </div>
+</div>
+
+<!-- URL / SOURCES SCREEN -->
+<div id="screen-url">
+  <div class="url-title">Add a video source</div>
+  <div class="url-sub">
+    Since the glasses can't open a file picker, host your MP4 on a simple local server or paste a direct URL below. Select a preset to add it instantly.
+  </div>
+  <div class="preset-label">Quick presets</div>
+  <div class="preset-list" id="preset-list">
+    <div class="preset-item focusable" tabindex="0" data-url="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-name="Big Buck Bunny (sample)">
+      <div class="preset-dot"></div>
+      <div>
+        <div class="preset-name">Big Buck Bunny</div>
+        <div class="preset-url">commondatastorage.googleapis.com · MP4</div>
+      </div>
+    </div>
+    <div class="preset-item focusable" tabindex="0" data-url="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" data-name="Elephants Dream (sample)">
+      <div class="preset-dot"></div>
+      <div>
+        <div class="preset-name">Elephants Dream</div>
+        <div class="preset-url">commondatastorage.googleapis.com · MP4</div>
+      </div>
+    </div>
+    <div class="preset-item focusable" tabindex="0" data-url="http://localhost:8080/video.mp4" data-name="Local server (port 8080)">
+      <div class="preset-dot"></div>
+      <div>
+        <div class="preset-name">Local server</div>
+        <div class="preset-url">localhost:8080/video.mp4</div>
+      </div>
+    </div>
+  </div>
+  <div class="url-instruction">
+    To serve your own files: run <strong style="color:#ccc">python3 -m http.server 8080</strong> in your video folder on your PC, then add the local server preset above. Both your PC and glasses must be on the same WiFi.
   </div>
 </div>
 
 <!-- PLAYER SCREEN -->
 <div id="screen-player">
-  <div class="player-topbar">
-    <button class="back-btn" onclick="goBack()" aria-label="Back to file list">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
-    </button>
+  <video id="vid" playsinline preload="auto"></video>
+  <div class="player-bar">
     <div class="player-title" id="player-title">Video</div>
-  </div>
-
-  <div class="video-wrap">
-    <video id="vid" controls playsinline preload="auto"></video>
-  </div>
-
-  <div class="cast-banner">
-    <strong>📡 Stream to glasses</strong>
-    In Meta View app → Live → share this screen. Keep this app in the foreground.
-  </div>
-
-  <div class="info-row" id="info-name">
-    <div class="lbl">File</div>
-    <div class="val" id="info-filename">—</div>
-  </div>
-  <div class="info-row" id="info-size">
-    <div class="lbl">Size</div>
-    <div class="val" id="info-filesize">—</div>
-  </div>
-  <div class="info-row" id="info-type">
-    <div class="lbl">Format</div>
-    <div class="val" id="info-filetype">—</div>
+    <div class="progress-wrap"><div id="progress-bar"></div></div>
+    <div class="time-row">
+      <span class="time-val" id="time-current">0:00</span>
+      <span class="time-val" id="time-total">0:00</span>
+    </div>
+    <div class="controls-row">
+      <div class="ctrl-btn focusable" tabindex="0" data-action="back-to-list">‹ Back</div>
+      <div class="ctrl-btn primary focusable" tabindex="0" data-action="play-pause" id="btn-playpause">⏸ Pause</div>
+      <div class="ctrl-btn focusable" tabindex="0" data-action="seek-back">−10s</div>
+      <div class="ctrl-btn focusable" tabindex="0" data-action="seek-fwd">+10s</div>
+    </div>
   </div>
 </div>
 
 <script>
-  const fileInput = document.getElementById('file-input');
-  const fileList  = document.getElementById('file-list');
-  const listLabel = document.getElementById('list-label');
-  const vid       = document.getElementById('vid');
-  const browseScreen = document.getElementById('screen-browse');
-  const playerScreen = document.getElementById('screen-player');
+// ── State ──
+var videos = JSON.parse(localStorage.getItem('rayban_videos') || '[]');
+var currentScreen = 'menu';
 
-  let loadedFiles = [];
-  let currentObjectURL = null;
-
-  fileInput.addEventListener('change', function(e) {
-    const files = Array.from(e.target.files).filter(f => f.type.startsWith('video/') || /\.(mp4|mov|avi|mkv|webm|m4v|3gp|ts|wmv)$/i.test(f.name));
-    if (!files.length) return;
-    loadedFiles = [...loadedFiles, ...files];
-    renderList();
+// ── Screen switching ──
+function showScreen(name) {
+  ['menu','list','url','player'].forEach(function(s) {
+    var el = document.getElementById('screen-' + s);
+    el.style.display = 'none';
   });
+  var screen = document.getElementById('screen-' + name);
+  screen.style.display = 'flex';
+  currentScreen = name;
+  setTimeout(function() {
+    var first = screen.querySelector('.focusable');
+    if (first) first.focus();
+  }, 50);
+}
 
-  function renderList() {
-    if (!loadedFiles.length) return;
-    listLabel.style.display = 'block';
-    fileList.innerHTML = '';
-    loadedFiles.forEach((file, i) => {
-      const item = document.createElement('div');
-      item.className = 'file-item';
-      item.innerHTML = `
-        <div class="file-thumb" id="thumb-${i}">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="2" width="20" height="20" rx="3"/><polygon points="10 8 16 12 10 16 10 8" fill="#fff"/>
-          </svg>
-        </div>
-        <div class="file-meta">
-          <div class="file-name">${escHtml(file.name)}</div>
-          <div class="file-sub">${fmtSize(file.size)} · ${file.type || ext(file.name)}</div>
-        </div>
-        <svg class="file-play-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
-        </svg>
-      `;
-      item.onclick = () => playFile(file);
-      fileList.appendChild(item);
-      generateThumb(file, i);
-    });
+// ── Video list rendering ──
+function renderList() {
+  var list = document.getElementById('video-list');
+  list.innerHTML = '';
+  if (!videos.length) {
+    list.innerHTML = '<div style="color:#333;font-size:14px;padding:20px;text-align:center;">No videos yet.<br>Add a URL from the menu.</div>';
+    return;
+  }
+  videos.forEach(function(v, i) {
+    var item = document.createElement('div');
+    item.className = 'video-item focusable';
+    item.tabIndex = 0;
+    item.dataset.action = 'play';
+    item.dataset.index = i;
+    item.innerHTML = '<div class="vi-thumb">▶</div>' +
+      '<div class="vi-info"><div class="vi-name">' + escHtml(v.name) + '</div>' +
+      '<div class="vi-meta">' + (v.url.length > 40 ? v.url.slice(0,38)+'…' : v.url) + '</div></div>' +
+      '<div class="vi-play">›</div>';
+    list.appendChild(item);
+  });
+}
+
+// ── Player ──
+var vid = document.getElementById('vid');
+function playVideo(v) {
+  vid.src = v.url;
+  document.getElementById('player-title').textContent = v.name;
+  showScreen('player');
+  vid.play().catch(function(){});
+}
+
+vid.addEventListener('timeupdate', function() {
+  var pct = vid.duration ? (vid.currentTime / vid.duration * 100) : 0;
+  document.getElementById('progress-bar').style.width = Math.round(pct) + '%';
+  document.getElementById('time-current').textContent = fmt(vid.currentTime);
+  document.getElementById('time-total').textContent = fmt(vid.duration || 0);
+});
+vid.addEventListener('ended', function() {
+  document.getElementById('btn-playpause').textContent = '▶ Play';
+});
+
+function fmt(s) {
+  s = Math.floor(s || 0);
+  return Math.floor(s/60) + ':' + ('0'+(s%60)).slice(-2);
+}
+
+// ── Add video ──
+function addVideo(url, name) {
+  videos.push({url:url, name:name});
+  localStorage.setItem('rayban_videos', JSON.stringify(videos));
+  renderList();
+}
+
+// ── Action handler ──
+function handleAction(action, el) {
+  switch(action) {
+    case 'browse':
+      renderList();
+      showScreen('list');
+      break;
+    case 'demo':
+      playVideo({url:'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', name:'Big Buck Bunny (demo)'});
+      break;
+    case 'sources':
+      showScreen('url');
+      break;
+    case 'back-to-menu':
+      showScreen('menu');
+      break;
+    case 'back-to-list':
+      vid.pause();
+      renderList();
+      showScreen('list');
+      break;
+    case 'play':
+      var idx = parseInt(el.dataset.index);
+      playVideo(videos[idx]);
+      break;
+    case 'play-pause':
+      if (vid.paused) {
+        vid.play();
+        document.getElementById('btn-playpause').textContent = '⏸ Pause';
+      } else {
+        vid.pause();
+        document.getElementById('btn-playpause').textContent = '▶ Play';
+      }
+      break;
+    case 'seek-back':
+      vid.currentTime = Math.max(0, vid.currentTime - 10);
+      break;
+    case 'seek-fwd':
+      vid.currentTime = Math.min(vid.duration || 0, vid.currentTime + 10);
+      break;
   }
 
-  function generateThumb(file, i) {
-    const thumbEl = document.getElementById('thumb-' + i);
-    if (!thumbEl) return;
-    const url = URL.createObjectURL(file);
-    const tmpVid = document.createElement('video');
-    tmpVid.src = url;
-    tmpVid.muted = true;
-    tmpVid.playsInline = true;
-    tmpVid.currentTime = 2;
-    tmpVid.addEventListener('seeked', () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 104; canvas.height = 72;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(tmpVid, 0, 0, 104, 72);
-      thumbEl.innerHTML = '';
-      thumbEl.appendChild(canvas);
-      URL.revokeObjectURL(url);
-    }, { once: true });
-    tmpVid.addEventListener('error', () => URL.revokeObjectURL(url), { once: true });
+  // Preset URL selection
+  if (el && el.dataset.url) {
+    var url = el.dataset.url;
+    var name = el.dataset.name;
+    var exists = videos.some(function(v){ return v.url === url; });
+    if (!exists) addVideo(url, name);
+    playVideo({url:url, name:name});
   }
+}
 
-  function playFile(file) {
-    if (currentObjectURL) URL.revokeObjectURL(currentObjectURL);
-    currentObjectURL = URL.createObjectURL(file);
-    vid.src = currentObjectURL;
-    document.getElementById('player-title').textContent = file.name;
-    document.getElementById('info-filename').textContent = file.name;
-    document.getElementById('info-filesize').textContent = fmtSize(file.size);
-    document.getElementById('info-filetype').textContent = file.type || ext(file.name);
-    browseScreen.style.display = 'none';
-    playerScreen.style.display = 'flex';
-    vid.play().catch(() => {});
-    if (playerScreen.requestFullscreen && /Mobi|Android/i.test(navigator.userAgent)) {
-      playerScreen.requestFullscreen().catch(() => {});
-    }
+// ── Neural Band: arrow keys + Enter ──
+var DPAD = {UP:'ArrowUp',DOWN:'ArrowDown',LEFT:'ArrowLeft',RIGHT:'ArrowRight',SELECT:'Enter',BACK:'Escape'};
+
+function moveFocus(dir) {
+  var screen = document.getElementById('screen-' + currentScreen);
+  var focusables = Array.from(screen.querySelectorAll('.focusable:not([disabled])'));
+  if (!focusables.length) return;
+  var idx = focusables.indexOf(document.activeElement);
+  if (idx === -1) { focusables[0].focus(); return; }
+  var next = (dir === 'up' || dir === 'left')
+    ? (idx > 0 ? idx - 1 : focusables.length - 1)
+    : (idx < focusables.length - 1 ? idx + 1 : 0);
+  focusables[next].focus();
+  focusables[next].scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+document.addEventListener('keydown', function(e) {
+  var active = document.activeElement;
+  switch(e.key) {
+    case DPAD.UP:    moveFocus('up');   e.preventDefault(); break;
+    case DPAD.DOWN:  moveFocus('down'); e.preventDefault(); break;
+    case DPAD.LEFT:  moveFocus('left'); e.preventDefault(); break;
+    case DPAD.RIGHT: moveFocus('right');e.preventDefault(); break;
+    case DPAD.SELECT:
+      if (active && active.dataset && (active.dataset.action || active.dataset.url)) {
+        handleAction(active.dataset.action, active);
+        e.preventDefault();
+      }
+      break;
+    case DPAD.BACK:
+      if (currentScreen === 'player') handleAction('back-to-list', null);
+      else if (currentScreen !== 'menu') showScreen('menu');
+      e.preventDefault();
+      break;
   }
+});
 
-  function goBack() {
-    vid.pause();
-    if (document.fullscreenElement) document.exitFullscreen();
-    playerScreen.style.display = 'none';
-    browseScreen.style.display = 'flex';
-  }
+// Also support click/tap (for browser testing)
+document.addEventListener('click', function(e) {
+  var el = e.target.closest('[data-action],[data-url]');
+  if (el) handleAction(el.dataset.action, el);
+});
 
-  function fmtSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
-    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
-  }
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
-  function ext(name) { return name.split('.').pop().toUpperCase(); }
-
-  function escHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
+// Init
+showScreen('menu');
 </script>
 </body>
 </html>
